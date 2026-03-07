@@ -43,3 +43,8 @@ instr:
 				 z <- (x / 2^(operand)).toInt
 
 
+scala3 book:
+https://docs.scala-lang.org/scala3/book/introduction.html
+
+scala3 docs:
+https://docs.scala-lang.org/scala3/reference/index.html
