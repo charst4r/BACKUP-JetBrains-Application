@@ -1,0 +1,45 @@
+
+arch:
+	program = list of 3b nums
+	3 regs x, y, z -> normal ints
+
+instr pointer:
+  starts at 0 
+	+= 2 after each instr except jump
+	halts at end
+
+operand:
+	3b operand after each instr
+	2 types (specified by instr):
+	  - literal -> literal value
+		- combo -> 
+			- 0, 1, 2, 3: literals 0, 1, 2, 3
+			- 4: x reg value
+			- 5: y reg value
+			- 6: z reg value
+			- 7: /!\ invalid as combo operand
+
+instr:
+	3b opcode
+	8 instr:
+	  - 0: xdv, combo
+				 x <- (x / 2^(operand)).toInt
+		- 1: yxl, literal
+				 y <- y xor operand
+		- 2: yst, combo 
+				 y <- operand mod 8 (== keep 3 lsb)
+		- 3: jnz, literal
+				 if x == 0 
+				   nothing 
+				 else 
+				   ip <- operand (/!\ no += 2)
+		- 4: yxz, no operand
+				 y <- y xor z
+		- 5: out, combo
+				 output operand mod 8 (== keep 3 lsb)
+		- 6: ydv, combo
+				 y <- (x / 2^(operand)).toInt
+		- 7: zdv, combo
+				 z <- (x / 2^(operand)).toInt
+
+
