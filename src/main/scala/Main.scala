@@ -44,58 +44,60 @@ object Computer:
 			case _ => throw IllegalArgumentException("operand 7 as combo :(")
 
 	/** execute one instruction of the program */
-	def step(state: State, program: List[(OpCode, Int)], output: List[Int]): (Option[State], List[Int]) =
-		program match
-			// end of the program
-			case Nil | _ :: Nil => ( None, output )
+	def step(state: State, program: List[Int], output: List[Int]): (Option[State], List[Int]) =
+		if state.ip + 2 >= program.length then ( None, output )	// end of the program
+		else	// read instructions
+			val opcode = OpCode.fromOrdinal(program(state.ip))
+			val operand = program(state.ip + 1)
+			val nextState = state.copy(ip = state.ip + 2)	// pre-copy since it's done everywhere
 
-			// read instr
-			case (opcode, operand) :: rem =>
-				opcode match
-					case XDV =>	// 0
-						val combOp = asCombo(operand, state)
-						val x = (state.x / pow(2, combOp)).toInt
-						( Some(State(x, state.y, state.z, state.ip + 2)), output )
-					
-					case YXL =>	// 1
-						val litOp = asLit(operand)
-						val y = state.y ^ litOp
-						( Some(State(state.x, y, state.z, state.ip + 2)), output )
-					
-					case YST =>	// 2
-						val combOp = asCombo(operand, state)
-						val y = combOp % 8
-						( Some(State(state.x, y, state.z, state.ip + 2)), output )
-					
-					case JNZ =>	// 3
-							if state.x == 0 then ( Some(state), output )
-							else ( Some(State(state.x, state.y, state.z, asLit(operand))), output )
-					
-					case YXZ =>	// 4
-						val y = state.y ^ state.z
-						( Some(State(state.x, y, state.z, state.ip + 2)), output )
-					
-					case OUT =>	// 5
-						val combOp = asCombo(operand, state)
-						val out = operand % 8
-						( Some(state), output :+ out)
-					
-					case YDV =>	// 6
-						val combOp = asCombo(operand, state)
-						val y = (state.x / pow(2, combOp)).toInt
-						( Some(State(state.x, y, state.z, state.ip + 2)), output )
-					
-					case ZDV =>	// 7
-						val combOp = asCombo(operand, state)
-						val z = (state.x / pow(2, combOp)).toInt
-						( Some(State(state.x, state.y, z, state.ip + 2)), output )
+			opcode match
+				case XDV =>	// 0
+					val combOp = asCombo(operand, state)
+					val x = (state.x >> combOp).toInt
+					( Some(state.copy(x = x)), output )
+				
+				case YXL =>	// 1
+					val litOp = asLit(operand)
+					val y = state.y ^ litOp
+					( Some(state.copy(y = y)), output )
+				
+				case YST =>	// 2
+					val combOp = asCombo(operand, state)
+					val y = combOp % 8
+					( Some(state.copy(y = y)), output )
+				
+				case JNZ =>	// 3
+						if state.x == 0 then ( Some(state), output )
+						else 
+							val litOp = asLit(operand)
+							( Some(state.copy(ip = litOp)), output )
+				
+				case YXZ =>	// 4
+					val y = state.y ^ state.z
+					( Some(state.copy(y = y)), output )
+				
+				case OUT =>	// 5
+					val combOp = asCombo(operand, state)
+					val out = operand % 8
+					( Some(state), output :+ out)
+				
+				case YDV =>	// 6
+					val combOp = asCombo(operand, state)
+					val y = (state.x >> combOp).toInt
+					( Some(state.copy(y = y)), output )
+				
+				case ZDV =>	// 7
+					val combOp = asCombo(operand, state)
+					val z = (state.x >> combOp).toInt
+					( Some(state.copy(z = z)), output )
 
 	/** runs the program step by step, stops when arrived at the end */
 	@tailrec
-	def run(state: State, program: List[(OpCode, Int)], output: List[Int]): List[Int] =
+	def run(state: State, program: List[Int], output: List[Int]): List[Int] =
 		step(state, program, Nil) match
 			case ( None, out ) => out
-			case ( Some(next), out ) => run(next, program.tail, out)
+			case ( Some(next), out ) => run(next, program, out)
 
 	@main 
 	def main() = 
