@@ -74,7 +74,7 @@ object Computer:
 						if state.x == 0 then ( Some(nextState), output )
 						else 
 							val litOp = asLit(operand)
-							( Some(nextState.copy(ip = litOp)), output )
+							( Some(state.copy(ip = litOp)), output )
 				
 				case YXZ =>	// 4
 					val y = state.y ^ state.z
@@ -82,7 +82,7 @@ object Computer:
 				
 				case OUT =>	// 5
 					val combOp = asCombo(operand, state)
-					val out = operand % 8
+					val out = combOp % 8
 					( Some(nextState), out :: output)
 				
 				case YDV =>	// 6
