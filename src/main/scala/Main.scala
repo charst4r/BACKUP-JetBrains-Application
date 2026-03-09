@@ -96,7 +96,6 @@ object Computer:
 	/** runs the program step by step, stops when arrived at the end */
 	@tailrec
 	def run(state: State, program: List[Int], output : List[Int] = Nil): List[Int] =
-		// Thread.sleep(1000)	//! remove
 		step(state, program, output) match
 			case ( None, out ) => out.reverse
 			case ( Some(next), out ) => run(next, program, out)
@@ -106,7 +105,7 @@ object Computer:
 
 		args match
 			case "--tests" :: Nil => 
-				// given examples: (state, input program, expected output)
+				// given examples, format: (state, input program, expected output)
 				val tests = List(
 					(initState(3729, 0, 0), 
 						List(0, 1, 5, 4, 3, 0), 
@@ -123,7 +122,7 @@ object Computer:
 					println(s"	actual output: ${res}")
 					println(s"--------------------------------------------")
 				}
-				
+
 			case x :: y :: z :: prog :: Nil =>
 				val parsed = prog.split(',').toList.map(s => s.trim().toInt)
 				val out = run(initState(x.toInt, y.toInt, z.toInt), parsed)
@@ -136,8 +135,8 @@ object Computer:
 			case "-h" :: Nil | "--help" :: Nil | _ =>
 				println(
 					"""|usage:
-					|  run --tests                run built-in tests
 					|  run <X> <Y> <Z> <program>  execute with given registers (program is a list of comma-separated ints)  
+					|  run --tests                run built-in tests
 					|  run --help, run -h         print this 
 					|""".stripMargin
 				)
