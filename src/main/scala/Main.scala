@@ -46,8 +46,6 @@ object Computer:
 
 	/** execute one instruction of the program */
 	def step(state: State, program: List[Int], output: List[Int]): (Option[State], List[Int]) =
-		println(s"	program len: ${program.length}")
-		println(s"	ip: ${state.ip}")
 		if state.ip + 1 >= program.length then ( None, output )	// end of the program
 		else	// read instructions
 			val opcode = OpCode.fromOrdinal(program(state.ip))
@@ -98,9 +96,7 @@ object Computer:
 	/** runs the program step by step, stops when arrived at the end */
 	@tailrec
 	def run(state: State, program: List[Int], output : List[Int] = Nil): List[Int] =
-		Thread.sleep(1000)
-		println(s"in run")
-		println(s"	state: ${state}, out: ${output}")
+		// Thread.sleep(1000)	//! remove
 		step(state, program, output) match
 			case ( None, out ) => out.reverse
 			case ( Some(next), out ) => run(next, program, out)
@@ -121,10 +117,10 @@ object Computer:
 				).foreach { (state, in, out) => 
 					println(s"starting test")
 					val res = run(state, in)	
-					println(s"	initial state: X=${state.x}	Y=${state.y}	Z=${state.z}")
-					println(s"	program=${in}")
-					println(s"	expected output=${out}")
-					println(s"	actual output=${res}")
+					println(s"	initial state: X: ${state.x}, Y: ${state.y}, Z: ${state.z}")
+					println(s"	program: ${in}")
+					println(s"	expected output: ${out}")
+					println(s"	actual output: ${res}")
 					println(s"--------------------------------------------")
 				}
 				
@@ -132,9 +128,9 @@ object Computer:
 				val parsed = prog.split(',').toList.map(s => s.trim().toInt)
 				val out = run(initState(x.toInt, y.toInt, z.toInt), parsed)
 				println(s"starting test")
-				println(s"	initial state: X=${x}	Y=${y}	Z=${z}")
-				println(s"	program=${parsed}")
-				println(s"	actual output=${out}")
+				println(s"	initial state: X: ${x}, Y: ${y}, Z: ${z}")
+				println(s"	program: ${parsed}")
+				println(s"	actual output: ${out}")
 				println(s"--------------------------------------------")
 
 			case "-h" :: Nil | "--help" :: Nil | _ =>
