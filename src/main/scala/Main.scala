@@ -6,7 +6,7 @@ import scala.annotation.init
 /** our 3-bit computer */
 object Computer:
 
-	/** the state of our computer, with registers and intruction pointer */
+	/** the state of our computer, with registers and instruction pointer */
 	case class State(
 		x: Int, y: Int, z: Int,
 		ip: Int
@@ -24,18 +24,18 @@ object Computer:
 		case ZDV
 	import OpCode.*
 
-	/** initial state given non-empty memory */
+	/** initial state with preset memory */
 	def initState(x: Int, y: Int, z: Int): State =
 		State(
 			x, y, z,
 			0	// always start at 0
 		)
 
-	/** interprets an operand as literal */
+	/** interpret an operand as literal */
 	def asLit(operand: Int): Int =
 		operand	
 
-	/** interprets an operand as a combo */
+	/** interpret an operand as a combo */
 	def asCombo(operand: Int, state: State): Int =
 		operand match
 			case 0 | 1 | 2 | 3 => operand
@@ -45,55 +45,55 @@ object Computer:
 			case _ => throw IllegalArgumentException("operand 7 as combo :(")
 
 	/** execute one instruction of the program */
-	def step(state: State, program: List[Int], output: List[Int]): (Option[State], List[Int]) =
-		if state.ip + 1 >= program.length then ( None, output )	// end of the program
-		else	// read instructions
+	def step(state: State, program: List[Int], outputAcc: List[Int]): (Option[State], List[Int]) =
+		if state.ip + 1 >= program.length then ( None, outputAcc )	// end of the program
+		else	// read and execute instruction
 			val opcode = OpCode.fromOrdinal(program(state.ip))
 			val operand = program(state.ip + 1)
-			val nextState = state.copy(ip = state.ip + 2)	// pre-copy since it's done everywhere
+			val nextState = state.copy(ip = state.ip + 2)	// pre-copy since it's done in every case
 
 			opcode match
 				case XDV =>	// 0
 					val combOp = asCombo(operand, state)
 					val x = (state.x >> combOp).toInt
-					( Some(nextState.copy(x = x)), output )
-				
+					( Some(nextState.copy(x = x)), outputAcc )
+
 				case YXL =>	// 1
 					val litOp = asLit(operand)
 					val y = state.y ^ litOp
-					( Some(nextState.copy(y = y)), output )
-				
+					( Some(nextState.copy(y = y)), outputAcc )
+
 				case YST =>	// 2
 					val combOp = asCombo(operand, state)
 					val y = combOp % 8
-					( Some(nextState.copy(y = y)), output )
-				
+					( Some(nextState.copy(y = y)), outputAcc )
+
 				case JNZ =>	// 3
-						if state.x == 0 then ( Some(nextState), output )
+						if state.x == 0 then ( Some(nextState), outputAcc )
 						else 
 							val litOp = asLit(operand)
-							( Some(state.copy(ip = litOp)), output )
-				
+							( Some(state.copy(ip = litOp)), outputAcc )
+
 				case YXZ =>	// 4
 					val y = state.y ^ state.z
-					( Some(nextState.copy(y = y)), output )
-				
+					( Some(nextState.copy(y = y)), outputAcc )
+
 				case OUT =>	// 5
 					val combOp = asCombo(operand, state)
 					val out = combOp % 8
-					( Some(nextState), out :: output)
-				
+					( Some(nextState), out :: outputAcc)
+
 				case YDV =>	// 6
 					val combOp = asCombo(operand, state)
 					val y = (state.x >> combOp).toInt
-					( Some(nextState.copy(y = y)), output )
-				
+					( Some(nextState.copy(y = y)), outputAcc )
+
 				case ZDV =>	// 7
 					val combOp = asCombo(operand, state)
 					val z = (state.x >> combOp).toInt
-					( Some(nextState.copy(z = z)), output )
+					( Some(nextState.copy(z = z)), outputAcc )
 
-	/** runs the program step by step, stops when arrived at the end */
+	/** run the program step by step, stop when arrived at the end */
 	@tailrec
 	def run(state: State, program: List[Int], output : List[Int] = Nil): List[Int] =
 		step(state, program, output) match
@@ -105,7 +105,7 @@ object Computer:
 
 		args match
 			case "--tests" :: Nil => 
-				// given examples, format: (state, input program, expected output)
+				// format: (state, input program, expected output)
 				val tests = List(
 					(initState(3729, 0, 0), 
 						List(0, 1, 5, 4, 3, 0), 
@@ -140,7 +140,4 @@ object Computer:
 					|  run --help, run -h         print this 
 					|""".stripMargin
 				)
-
-
-
-
+				
