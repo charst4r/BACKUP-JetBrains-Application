@@ -17,12 +17,12 @@ And get the command-line help with the `--help` or `-h` flags:
 sbt run --help
 ```
 
-You can also add more tests to the `tests` list in the `main` function and run them with the `--test` flag. The format is a 3-tuple with the initial state of the computer, the program and the expected output: 
+You can also add more tests to the `tests` list in the `main` function and run them with the `--tests` flag. The format is a 3-tuple with the initial state of the computer, the program and the expected output: 
 ```scala
 val tests = List(
 	(initState(<X>, <Y>, <Z>)
-		List(<program as comma-separated 3-bit numbers>), 
-		List(<expected output as comma-separated numbers>)
+		List(<program as comma-separated 3-bit integers>), 
+		List(<expected output as comma-separated integers>)
 	)
 )
 ```
