@@ -1,9 +1,43 @@
-# Task #1
-## Solution requirements
+# Evolving Scala Compiler Error Highlighting in IntelliJ IDEA / Scala Plugin
+
+## How to run
+
+To run this, you can pass `X`, `Y`, `Z` and the program as command line arguments to sbt. For example, this runs the first of the given examples:
+```bash
+sbt run 3729 0 0 0,1,5,4,3,0	// X = 3729, Y = 0, Z = 0, program = 0,1,5,4,3,0
+```
+
+You can also run both the given examples by passing the `--tests` flag:
+```bash 
+sbt run --tests
+```
+
+And get the command-line help with the `--help` or `-h` flags:
+```bash
+sbt run --help
+```
+
+You can also add more tests to the `tests` list in the `main` function and run them with the `--test` flag. The format is a 3-tuple with the initial state of the computer, the program and the expected output: 
+```scala
+val tests = List(
+	(initState(<X>, <Y>, <Z>)
+		List(<program as comma-separated 3-bit numbers>), 
+		List(<expected output as comma-separated numbers>)
+	)
+)
+```
+
+This implementation assumes the input is valid and feeds it directly into the computer simulation. I also assumed 32-bits integers for the registers.
+
+---
+
+## Task instructions
+
+### Solution requirements
 
 Please solve the following task. The solution should be structured as a small sbt or scala-cli project using Scala 3. The code should compile, be runnable and produce results. You are encouraged to use as many Scala 3 features as you like. Please create a GitHub (or any other online code hosting platform) repository and share the link in your internship application. Please refrain from using AI and code generation tools while solving this task, as well as during the interview. We hope you have fun with the task.
 
-## 3-bit computer
+### 3-bit computer
 
 The task is to simulate a 3-bit computer given the following requirements.
 
@@ -55,11 +89,11 @@ Here are some examples of instruction operations:
 
 - If register Y contains 2024 and register Z contains 43690, the program 4,0 would set register Y to 44354.
 
-## Tests
+### Tests
 
 The following two starting states are provided. Your task is to initialize the registers to the given values and run the given program. Once the program halts, you should join all values produced by the out instructions into a single string to obtain the expected output.
 
-### Starting state 1
+#### Starting state 1
 
 Register X: 3729
 
@@ -72,7 +106,7 @@ Program: 0,1,5,4,3,0
 Expected output: 0,4,2,1,4,2,5,6,7,3,1,0
 
 
-### Starting state 2
+#### Starting state 2
 
 Register X: 8642024
 
