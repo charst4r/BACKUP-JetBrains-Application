@@ -1,6 +1,7 @@
 
 import scala.math.pow
 import scala.annotation.tailrec
+import scala.annotation.init
 
 /** our 3-bit computer */
 object Computer:
@@ -23,11 +24,11 @@ object Computer:
 		case ZDV
 	import OpCode.*
 
-	/** initial state, assuming empty memory */
-	def initState(): State =
+	/** initial state given non-empty memory */
+	def initState(x: Int, y: Int, z: Int): State =
 		State(
-			0, 0, 0,
-			0
+			x, y, z,
+			0	// always start at 0
 		)
 
 	/** interprets an operand as literal */
@@ -45,7 +46,9 @@ object Computer:
 
 	/** execute one instruction of the program */
 	def step(state: State, program: List[Int], output: List[Int]): (Option[State], List[Int]) =
-		if state.ip + 2 >= program.length then ( None, output )	// end of the program
+		println(s"	program len: ${program.length}")
+		println(s"	ip: ${state.ip}")
+		if state.ip + 1 >= program.length then ( None, output )	// end of the program
 		else	// read instructions
 			val opcode = OpCode.fromOrdinal(program(state.ip))
 			val operand = program(state.ip + 1)
@@ -55,58 +58,94 @@ object Computer:
 				case XDV =>	// 0
 					val combOp = asCombo(operand, state)
 					val x = (state.x >> combOp).toInt
-					( Some(state.copy(x = x)), output )
+					( Some(nextState.copy(x = x)), output )
 				
 				case YXL =>	// 1
 					val litOp = asLit(operand)
 					val y = state.y ^ litOp
-					( Some(state.copy(y = y)), output )
+					( Some(nextState.copy(y = y)), output )
 				
 				case YST =>	// 2
 					val combOp = asCombo(operand, state)
 					val y = combOp % 8
-					( Some(state.copy(y = y)), output )
+					( Some(nextState.copy(y = y)), output )
 				
 				case JNZ =>	// 3
-						if state.x == 0 then ( Some(state), output )
+						if state.x == 0 then ( Some(nextState), output )
 						else 
 							val litOp = asLit(operand)
-							( Some(state.copy(ip = litOp)), output )
+							( Some(nextState.copy(ip = litOp)), output )
 				
 				case YXZ =>	// 4
 					val y = state.y ^ state.z
-					( Some(state.copy(y = y)), output )
+					( Some(nextState.copy(y = y)), output )
 				
 				case OUT =>	// 5
 					val combOp = asCombo(operand, state)
 					val out = operand % 8
-					( Some(state), output :+ out)
+					( Some(nextState), out :: output)
 				
 				case YDV =>	// 6
 					val combOp = asCombo(operand, state)
 					val y = (state.x >> combOp).toInt
-					( Some(state.copy(y = y)), output )
+					( Some(nextState.copy(y = y)), output )
 				
 				case ZDV =>	// 7
 					val combOp = asCombo(operand, state)
 					val z = (state.x >> combOp).toInt
-					( Some(state.copy(z = z)), output )
+					( Some(nextState.copy(z = z)), output )
 
 	/** runs the program step by step, stops when arrived at the end */
 	@tailrec
-	def run(state: State, program: List[Int], output: List[Int]): List[Int] =
-		step(state, program, Nil) match
-			case ( None, out ) => out
+	def run(state: State, program: List[Int], output : List[Int] = Nil): List[Int] =
+		Thread.sleep(1000)
+		println(s"in run")
+		println(s"	state: ${state}, out: ${output}")
+		step(state, program, output) match
+			case ( None, out ) => out.reverse
 			case ( Some(next), out ) => run(next, program, out)
 
 	@main 
-	def main() = 
-		// parse args
-		// init state
-		// run
-		//! output -- check requirements
+	def main(args: String*) = 
 
-		???	// todo duh
+		args match
+			case "--tests" :: Nil => 
+				// given examples: (state, input program, expected output)
+				val tests = List(
+					(initState(3729, 0, 0), 
+						List(0, 1, 5, 4, 3, 0), 
+						List(0, 4, 2, 1, 4, 2, 5, 6, 7, 3, 1, 0)),
+					(initState(8642024, 0, 0), 
+						List(0, 3, 5, 4, 3, 0), 
+						List(5, 7, 6, 5, 7, 0, 4, 0))
+				).foreach { (state, in, out) => 
+					println(s"starting test")
+					val res = run(state, in)	
+					println(s"	initial state: X=${state.x}	Y=${state.y}	Z=${state.z}")
+					println(s"	program=${in}")
+					println(s"	expected output=${out}")
+					println(s"	actual output=${res}")
+					println(s"--------------------------------------------")
+				}
+				
+			case x :: y :: z :: prog :: Nil =>
+				val parsed = prog.split(',').toList.map(s => s.trim().toInt)
+				val out = run(initState(x.toInt, y.toInt, z.toInt), parsed)
+				println(s"starting test")
+				println(s"	initial state: X=${x}	Y=${y}	Z=${z}")
+				println(s"	program=${parsed}")
+				println(s"	actual output=${out}")
+				println(s"--------------------------------------------")
+
+			case "-h" :: Nil | "--help" :: Nil | _ =>
+				println(
+					"""|usage:
+					|  run --tests                run built-in tests
+					|  run <X> <Y> <Z> <program>  execute with given registers (program is a list of comma-separated ints)  
+					|  run --help, run -h         print this 
+					|""".stripMargin
+				)
+
 
 
 
